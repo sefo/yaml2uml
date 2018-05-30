@@ -2,13 +2,16 @@
   "name": "yaml2uml",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://github.com/sefo/yaml2uml",
   "scripts": {
     "serve": "vue-cli-service serve --open",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "deploy": "node ./node_modules/vue-gh-pages/index.js"
   },
   "dependencies": {
     "js-yaml": "^3.11.0",
-    "vue": "^2.5.16"
+    "vue": "^2.5.16",
+    "vue-gh-pages": "^1.16.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.0-beta.11",

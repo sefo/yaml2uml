@@ -58,12 +58,6 @@ export default {
       this.definitions = jsonYaml.definitions;
       this.buildXml();
     },
-    // fix position problem
-    // add field type
-    // add colors
-    // add properties links #ref
-    // download or open xml in new tab
-    // add to github page
     buildXml: function() {
       let classPosition = 1;
       for (let definition in this.definitions) {
