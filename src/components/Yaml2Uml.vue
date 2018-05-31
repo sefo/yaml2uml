@@ -19,6 +19,7 @@ export default {
   data: function() {
     return {
       yaml: '',
+      isOpenApi3: false,
       baseXml: `<?xml version="1.0" encoding="UTF-8"?><mxGraphModel dx="950" dy="598" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel>`,
       currentID: 1,
       xmlDoc: null,
@@ -46,16 +47,20 @@ export default {
     },
     testYaml: function(contents) {
       let jsonYaml = jsyaml.load(contents);
-      let definitionSize = Object.keys(jsonYaml.definitions).length
+      this.isOpenApi3 = jsonYaml.openapi && jsonYaml.openapi.startsWith('3') ? true : false;
+      let definitionSize =
+        this.isOpenApi3 ?
+          Object.keys(jsonYaml.components.schemas).length :
+          Object.keys(jsonYaml.definitions).length;
       if (definitionSize < 1) {
-        console.log('No definition to load!');
+        console.log('No model to load!');
         return;
       }
       console.log(`Loading ${definitionSize} models...`);
       let parser = new DOMParser();
       this.xmlDoc = parser.parseFromString(this.baseXml, "application/xml");
       this.root = this.xmlDoc.getElementsByTagName('root')[0];
-      this.definitions = jsonYaml.definitions;
+      this.definitions = this.isOpenApi3 ? jsonYaml.components.schemas : jsonYaml.definitions;
       this.buildXml();
     },
     buildXml: function() {
@@ -72,7 +77,12 @@ export default {
       let width = 140;
       let spacing = 20;
       let y = 10;
-      let fieldNumber = Object.keys(this.definitions[definition].properties).length;
+      let fieldNumber = 0;
+      if (this.definitions[definition].properties) {
+        fieldNumber = Object.keys(this.definitions[definition].properties).length;
+      } else if (this.definitions[definition].type == 'array') {
+        fieldNumber = Object.keys(this.definitions[definition].items).length;
+      }
       let height = 26 + fieldNumber * 26;
       let newClass = this.xmlDoc.createElement('mxCell');
       newClass.setAttribute('id', ++this.currentID);
@@ -93,9 +103,15 @@ export default {
       this.root.appendChild(newClass);
       let iterator = 1;
       let parent = Object.assign(this.currentID);
-      for (let property in this.definitions[definition].properties) {
-        let newField = this.buildField(property, iterator, parent);
-        iterator++;
+      if (this.definitions[definition].properties) {
+        for (let property in this.definitions[definition].properties) {
+          this.buildField(property, iterator, parent);
+          iterator++;
+        }
+      } else {
+        // #ref/components/schema/Pet returns [Pet]
+        let property = /[^\/]+$/.exec(this.definitions[definition].items.$ref);
+        this.buildField(`[${property}]`, 1, parent);
       }
       return newClass;
     },
