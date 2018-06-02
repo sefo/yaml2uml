@@ -28,12 +28,19 @@ export default {
     }
   },
   methods: {
+    /**
+     * Retrieve the file
+     */
     onFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
       if (!files.length)
         return;
       this.parseFile(files[0]);
     },
+    /**
+     * Save the file to this.yaml
+     * Send it for testing
+     */
     parseFile(file) {
       let reader = new FileReader();
       reader.onload = (e) => {
@@ -42,9 +49,17 @@ export default {
       };
       reader.readAsText(file);
     },
+    /**
+     * Clears this.yaml
+     */
     removeFile: function (e) {
       this.yaml = '';
     },
+    /**
+     * Parses yaml to json and 
+     * Ready the file for parsing, check yaml version
+     * Prepare the base XMLDoc and sends definitions/schemas to build f()
+     */
     testYaml: function(contents) {
       let jsonYaml = jsyaml.load(contents);
       this.isOpenApi3 = jsonYaml.openapi && jsonYaml.openapi.startsWith('3') ? true : false;
@@ -63,6 +78,10 @@ export default {
       this.definitions = this.isOpenApi3 ? jsonYaml.components.schemas : jsonYaml.definitions;
       this.buildXml();
     },
+    /**
+     * For each definition, build and XML mxCell element
+     * Sends the complete XML to console
+     */
     buildXml: function() {
       let classPosition = 1;
       for (let definition in this.definitions) {
@@ -72,16 +91,26 @@ export default {
       let s = new XMLSerializer();
       console.log(s.serializeToString(this.xmlDoc));
     },
+    /**
+     * Set up a mxCell element of type swimlane and its mxGeometry counterpart
+     Then for each property of the definition, build the corresponding mxCell
+     */
     buildClass: function(definition, position) {
       let style = 'swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;';
       let width = 140;
       let spacing = 20;
       let y = 10;
       let fieldNumber = 0;
+      let props = {};
       if (this.definitions[definition].properties) {
-        fieldNumber = Object.keys(this.definitions[definition].properties).length;
+        props = this.definitions[definition].properties;
+        fieldNumber = Object.keys(props).length;
       } else if (this.definitions[definition].type == 'array') {
-        fieldNumber = Object.keys(this.definitions[definition].items).length;
+        props = this.definitions[definition].items;
+        fieldNumber = 1;
+      } else if (this.definitions[definition].allOf) {
+        props = this.manageAllOf(this.definitions[definition].allOf);
+        fieldNumber = Object.keys(props).length;
       }
       let height = 26 + fieldNumber * 26;
       let newClass = this.xmlDoc.createElement('mxCell');
@@ -103,18 +132,21 @@ export default {
       this.root.appendChild(newClass);
       let iterator = 1;
       let parent = Object.assign(this.currentID);
-      if (this.definitions[definition].properties) {
-        for (let property in this.definitions[definition].properties) {
+      if (this.definitions[definition].properties || this.definitions[definition].allOf) {
+        for (let property in props) {
           this.buildField(property, iterator, parent);
           iterator++;
         }
       } else {
         // #ref/components/schema/Pet returns [Pet]
-        let property = /[^\/]+$/.exec(this.definitions[definition].items.$ref);
-        this.buildField(`[${property}]`, 1, parent);
+        let property = /[^\/]+$/.exec(props.$ref);
+        this.buildField(`[${property}] : array`, 1, parent);
       }
       return newClass;
     },
+    /**
+     * Create an mxCell and mxGeometry for a particular property
+     */
     buildField: function(property, iterator, parent) {
       let style = 'text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;';
       let value = property;
@@ -132,6 +164,29 @@ export default {
       newField.appendChild(newGeometry);
       this.root.appendChild(newField);
       return newField;
+    },
+    /**
+     * Returns an object merged allOf ref
+     */
+    manageAllOf: function(allOf) {
+      let obj = {};
+      let ref = '';
+      // forced to make 2 loops
+      // each allOf can have either type: object + $ref
+      // or properties + $ref
+      // properties and $ref are not necessary in the same item
+      for (let item in allOf) {
+        if (allOf[item].$ref) {
+          ref = /[^\/]+$/.exec(allOf[item].$ref)[0];
+        }
+      }
+      for (let item in allOf) {
+        if (allOf[item].properties) {
+          allOf[item].properties[ref] = new Object({type: 'allOf'});
+          obj = allOf[item].properties;
+        }
+      }
+      return obj;
     }
   }
 }

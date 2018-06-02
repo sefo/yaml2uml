@@ -14,14 +14,27 @@ Supports array refs
       $ref: "#/definitions/Tag"
 ```
 
+Supports allOf
+
+```
+  Dog:
+    allOf:
+      - $ref: '#/components/schemas/Pet'
+      - type: object
+        properties:
+          bark:
+            type: boolean
+          breed:
+            type: string
+            enum: [Dingo, Husky, Retriever, Shepherd]
+```
+
 Current TODOS:
 
 - Fix position problem
   - Class diagrams are not aligned correctly on the grid at the moment.
 - Download XML
   - For the moment the XML is only visible in the console
-- Add support for *of
-  - Properties inside allof, anyof, oneof are not supported at the moment
 - Add property types
   - Properties are not typed. Later parse properties.type
 - Add colors
