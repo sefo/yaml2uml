@@ -80,7 +80,7 @@ export default {
     },
     /**
      * For each definition, build and XML mxCell element
-     * Sends the complete XML to console
+     * Sends the complete XML a new window
      */
     buildXml: function() {
       let classPosition = 1;
@@ -88,8 +88,7 @@ export default {
         let newClass = this.buildClass(definition, classPosition);
         classPosition++;
       }
-      let s = new XMLSerializer();
-      console.log(s.serializeToString(this.xmlDoc));
+      this.displayXml();
     },
     /**
      * Set up a mxCell element of type swimlane and its mxGeometry counterpart
@@ -187,6 +186,25 @@ export default {
         }
       }
       return obj;
+    },
+    /**
+     * Serialize XML file and propose a download
+     */
+    displayXml: function() {
+      let s = new XMLSerializer();
+      let blob = new Blob([s.serializeToString(this.xmlDoc)], {type: 'text/xml'});
+      let filename = 'yaml.xml';
+      if(window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveBlob(blob, filename);
+      }
+      else{
+          var elem = window.document.createElement('a');
+          elem.href = window.URL.createObjectURL(blob);
+          elem.download = filename;        
+          document.body.appendChild(elem);
+          elem.click();        
+          document.body.removeChild(elem);
+      }
     }
   }
 }
