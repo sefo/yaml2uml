@@ -1,21 +1,31 @@
 
 <template>
   <div class="yaml2uml">
-    <div v-if="!yaml">
-      <h2>Select a yaml</h2>
-      <input type="file" @change="onFileChange">
+    <div class="file">
+      <div v-if="!yaml">
+        <h2>Select a yaml</h2>
+        <input type="file" @change="onFileChange">
+      </div>
+      <div v-else>
+        <button @click="removeFile">Remove file</button>
+      </div>
     </div>
-    <div v-else>
-      <button @click="removeFile">Remove file</button>
+    <div class="picker">
+      <h3>Class header color:</h3>
+      <compact-picker v-model="classColor" />
     </div>
   </div>
 </template>
 
 <script>
 import * as jsyaml from 'js-yaml'
+import compact from 'vue-color/src/components/Compact.vue';
 
 export default {
   name: 'Yaml2Uml',
+  components: {
+    'compact-picker': compact
+  },
   data: function() {
     return {
       yaml: '',
@@ -24,7 +34,8 @@ export default {
       currentID: 1,
       xmlDoc: null,
       root :null,
-      definitions: null
+      definitions: null,
+      classColor: {hex: '#DAE8FC'}
     }
   },
   methods: {
@@ -95,7 +106,7 @@ export default {
      Then for each property of the definition, build the corresponding mxCell
      */
     buildClass: function(definition, position) {
-      let style = 'swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;';
+      let style = `swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=${this.classColor.hex};horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;`;
       let width = 140;
       let spacing = 20;
       let y = 10;
@@ -211,4 +222,12 @@ export default {
 </script>
 
 <style scoped>
+  span {
+    padding-top: 30px;
+  }
+  .picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 </style>

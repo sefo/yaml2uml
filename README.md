@@ -33,7 +33,5 @@ Current TODOS:
 
 - Fix position problem
   - Class diagrams are not aligned correctly on the grid at the moment
-- Add colors
-  - Allow changing cell style
-- Add Links between classes
+- Add relationships between classes
   - Parsing category: $ref: "#/definitions/Category"
