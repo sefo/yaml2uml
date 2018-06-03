@@ -133,25 +133,25 @@ export default {
       let parent = Object.assign(this.currentID);
       if (this.definitions[definition].properties || this.definitions[definition].allOf) {
         for (let property in props) {
-          this.buildField(property, iterator, parent);
+          let type = props[property].type;
+          this.buildField(property, type, iterator, parent);
           iterator++;
         }
       } else {
         // #ref/components/schema/Pet returns [Pet]
         let property = /[^\/]+$/.exec(props.$ref);
-        this.buildField(`[${property}] : array`, 1, parent);
+        this.buildField(`[${property}]`, 'array', 1, parent);
       }
       return newClass;
     },
     /**
      * Create an mxCell and mxGeometry for a particular property
      */
-    buildField: function(property, iterator, parent) {
+    buildField: function(property, type, iterator, parent) {
       let style = 'text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;';
-      let value = property;
       let newField = this.xmlDoc.createElement('mxCell');
       newField.setAttribute('id', ++this.currentID);
-      newField.setAttribute('value', value);
+      newField.setAttribute('value', `${property} : ${type}`);
       newField.setAttribute('style', style);
       newField.setAttribute('vertex', 1);
       newField.setAttribute('parent', parent);

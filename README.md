@@ -33,8 +33,6 @@ Current TODOS:
 
 - Fix position problem
   - Class diagrams are not aligned correctly on the grid at the moment
-- Add property types
-  - Properties are not typed. Later parse properties.type
 - Add colors
   - Allow changing cell style
 - Add Links between classes
