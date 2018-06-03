@@ -32,9 +32,7 @@ Supports allOf
 Current TODOS:
 
 - Fix position problem
-  - Class diagrams are not aligned correctly on the grid at the moment.
-- Download XML
-  - For the moment the XML is only visible in the console
+  - Class diagrams are not aligned correctly on the grid at the moment
 - Add property types
   - Properties are not typed. Later parse properties.type
 - Add colors
